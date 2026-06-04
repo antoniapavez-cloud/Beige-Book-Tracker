@@ -73,6 +73,16 @@
     gap: 20px;
   }
   .header-left { display: flex; flex-direction: column; gap: 4px; }
+  .header-updated {
+    font-family: 'Aller Light', sans-serif;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.03em;
+  }
+  .header-updated strong {
+    font-weight: 700;
+    color: var(--text-muted);
+  }
   .header-eyebrow {
     font-family: 'Aller', sans-serif;
     font-size: 10px;
@@ -401,8 +411,8 @@
 <div class="header">
   <div class="header-left">
     <span class="header-title">Beige Book — Monitor Mensual</span>
+    <span class="header-updated">Última actualización: <strong>4 Jun 2026</strong></span>
   </div>
-</div>
 </div>
 
 <div class="table-wrapper" id="tableWrapper"></div>
