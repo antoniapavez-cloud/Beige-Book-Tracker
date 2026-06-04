@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beige Book Tracker — Fed Monitor</title>
+<link href="https://fonts.cdnfonts.com/css/aller" rel="stylesheet">
+<style>
+  /* Forzar Aller Bold en headers */
+  thead th {
+    font-family: 'Aller', sans-serif !important;
+    font-weight: bold !important;
+    font-synthesis: none;
+  }
+  .header-title {
+    font-family: 'Aller', sans-serif !important;
+    font-weight: bold !important;
+  }
+</style>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f5f8f2;
+    --surface2: #edf3e6;
+    --border: #dde8d4;
+    --border2: #c8d9b8;
+    --text: #1b2127;
+    --text-muted: #5d7082;
+    --text-dim: #b5c1cb;
+    --accent: #7bc143;
+    --accent2: #475765;
+
+    /* pos = verde MFO */
+    --pos: #3d6e1a;
+    --pos-bg: #e1f1d3;
+    --pos-border: #b3d88c;
+
+    /* neg = naranja MFO (señal de alerta/caída) */
+    --neg: #a8411a;
+    --neg-bg: #fce9e2;
+    --neg-border: #e07f5c;
+
+    /* flat = gris-azul MFO (tablas) */
+    --flat: #3d5060;
+    --flat-bg: #eaeff3;
+    --flat-border: #b5c1cb;
+
+    /* hot = naranja oscuro MFO */
+    --hot: #8a3010;
+    --hot-bg: #fde0d4;
+    --hot-border: #e07f5c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Aller Light', sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid var(--border);
+    border-top: 3px solid var(--accent);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .header-left { display: flex; flex-direction: column; gap: 4px; }
+  .header-eyebrow {
+    font-family: 'Aller', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .header-title {
+    font-family: 'Aller', sans-serif !important;
+    font-size: 22px;
+    font-weight: 700 !important;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .header-subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .header-right {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+  .legend {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+
+  /* WRAPPER */
+  .table-wrapper {
+    overflow-x: auto;
+    padding: 24px 32px 40px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--flat-border) transparent;
+  }
+  .table-wrapper::-webkit-scrollbar {
+    height: 6px;
+  }
+  .table-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .table-wrapper::-webkit-scrollbar-thumb {
+    background: var(--flat-border);
+    border-radius: 99px;
+  }
+  .table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: var(--flat);
+  }
+
+  /* TABLE */
+  table {
+    border-collapse: collapse;
+    min-width: 100%;
+  }
+  thead th {
+    font-family: 'Aller', sans-serif !important;
+    font-size: 15px;
+    font-weight: 700 !important;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text);
+    padding: 0 10px 14px;
+    text-align: center;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  thead th.topic-header {
+    text-align: left;
+    padding-left: 0;
+    min-width: 200px;
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    background: var(--bg);
+  }
+  thead th, thead th.latest {
+    font-family: 'Aller', sans-serif !important;
+    font-weight: 700 !important;
+    -webkit-font-smoothing: antialiased;
+  }
+  thead th.month-header {
+    min-width: 110px;
+  }
+  /* Highlight latest column */
+  thead th.latest {
+    color: var(--text);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  tbody tr:hover { background: #f5f8f2; }
+  tbody tr:last-child { border-bottom: none; }
+
+  .topic-cell {
+    padding: 12px 16px 12px 0;
+    white-space: nowrap;
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: var(--bg);
+  }
+  tbody tr:hover .topic-cell {
+    background: #f5f8f2;
+  }
+  .topic-icon {
+    display: inline-block;
+    margin-right: 8px;
+    font-size: 14px;
+    vertical-align: middle;
+  }
+  .topic-name {
+    font-family: 'Aller Light', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .data-cell {
+    padding: 8px 10px;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  /* BADGES */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+    min-width: 90px;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+  }
+  .badge-icon {
+    display: none;
+  }
+  .badge-label {
+    font-family: 'Aller Light', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .badge.pos { background: var(--pos-bg); border-color: var(--pos-border); color: var(--pos); }
+  .badge.neg { background: var(--neg-bg); border-color: var(--neg-border); color: var(--neg); }
+  .badge.flat { background: var(--flat-bg); border-color: var(--flat-border); color: var(--flat); }
+  .badge.hot { background: var(--hot-bg); border-color: var(--hot-border); color: var(--hot); }
+
+  .empty-cell {
+    display: inline-block;
+    width: 80px;
+    height: 36px;
+    border-radius: 5px;
+    background: var(--surface);
+    border: 1px dashed var(--border2);
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(5,7,12,0.85);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    width: 620px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    animation: modal-in 0.18s ease;
+  }
+  @keyframes modal-in {
+    from { opacity:0; transform: scale(0.96) translateY(6px); }
+    to   { opacity:1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-header {
+    padding: 20px 22px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .modal-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .modal-period {
+    font-family: 'Aller', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .modal-topic {
+    font-family: 'Aller', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .modal-badge-wrap { flex-shrink: 0; }
+  .modal-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-family: 'Aller Light', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid transparent;
+  }
+  .modal-badge.pos { background: var(--pos-bg); border-color: var(--pos-border); color: var(--pos); }
+  .modal-badge.neg { background: var(--neg-bg); border-color: var(--neg-border); color: var(--neg); }
+  .modal-badge.flat { background: var(--flat-bg); border-color: var(--flat-border); color: var(--flat); }
+  .modal-badge.hot { background: var(--hot-bg); border-color: var(--hot-border); color: var(--hot); }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 2px 6px;
+    line-height: 1;
+    margin-left: 8px;
+    flex-shrink: 0;
+    transition: color 0.1s;
+  }
+  .modal-close:hover { color: var(--text); }
+
+  .modal-body {
+    padding: 18px 22px 22px;
+  }
+  .modal-bullets {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .modal-bullets li {
+    font-family: 'Aller Light', sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
+    padding-left: 18px;
+    position: relative;
+  }
+  .modal-bullets li::before {
+    content: '▶';
+    color: #b5c1cb;
+    font-size: 11px;
+    position: absolute;
+    left: 0;
+    top: 3px;
+  }
+
+  .modal-bullets li strong {
+    font-weight: 700;
+    color: var(--text);
+  }
+  .empty-state {
+    padding: 60px 32px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+  .empty-state-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.5; }
+  .empty-state-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .empty-state-sub { font-size: 12px; color: var(--text-dim); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <span class="header-title">Beige Book — Monitor Mensual</span>
+  </div>
+</div>
+</div>
+
+<div class="table-wrapper" id="tableWrapper"></div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-meta">
+        <span class="modal-period" id="modalPeriod"></span>
+        <span class="modal-topic" id="modalTopic"></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="modal-badge-wrap"><span class="modal-badge" id="modalBadge"></span></div>
+        <button class="modal-close" onclick="document.getElementById('modalOverlay').classList.remove('active')">✕</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <ul class="modal-bullets" id="modalBullets"></ul>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── CONFIGURATION ──────────────────────────────────────────────
+const TOPICS = [
+  { id: 'economy', icon: '', name: 'Actividad económica general' },
+  { id: 'consumer', icon: '', name: 'Consumo y ventas minoristas' },
+  { id: 'prices', icon: '', name: 'Precios e inflación' },
+  { id: 'labor', icon: '', name: 'Mercado laboral' },
+  { id: 'manufacturing', icon: '', name: 'Manufactura' },
+  { id: 'residential', icon: '', name: 'Bienes raíces residencial' },
+  { id: 'commercial', icon: '', name: 'Bienes raíces comercial y construcción' },
+  { id: 'banking', icon: '', name: 'Banca y condiciones financieras' },
+  { id: 'transport', icon: '', name: 'Transporte y logística' },
+  { id: 'agriculture', icon: '', name: 'Agricultura' },
+  { id: 'energy', icon: '', name: 'Energía' },
+  { id: 'tech', icon: '', name: 'Tecnología e IA' },
+  { id: 'geopolitics', icon: '', name: 'Evento geopolítico relevante' },
+  { id: 'vulnerable', icon: '', name: 'Comunidades y hogares vulnerables' },
+];
+
+// STATUS CONFIG
+const STATUS = {
+  pos:  { label: 'Positivo',    icon: '▲', color: 'pos' },
+  neg:  { label: 'Negativo',    icon: '▼', color: 'neg' },
+  flat: { label: 'Estable',     icon: '◆', color: 'flat' },
+  hot:  { label: 'Presión',     icon: '🔥', color: 'hot' },
+};
+
+// ─── DATA ────────────────────────────────────────────────────────
+// MONTHS: array of month keys in chronological order
+// Each key maps to a human-readable label and data for each topic
+const MONTHS = [
+  'jan2026',
+  'feb2026',
+  'apr2026',
+  'may2026',
+];
+
+const DATA = {
+  'jan2026': {
+    label: 'Ene 2026',
+    economy: {
+      status: 'flat',
+      tag: 'Expansión leve',
+      bullets: [
+        'La actividad económica <strong>creció a un ritmo leve a modesto en 8 de 12 distritos</strong>; 3 reportaron poco cambio y 1 registró caída modesta. Marca una mejora respecto a los últimos tres ciclos donde la mayoría reportó poco cambio.',
+        'La manufactura fue mixta: <strong>5 distritos crecimiento y 6 contracción</strong>. Los servicios no financieros mostraron demanda estable o levemente al alza.',
+        'Las condiciones bancarias fueron estables o mejorando, con mayor demanda en tarjetas de crédito, préstamos sobre el valor de la vivienda y crédito comercial.',
+        'Las perspectivas fueron levemente optimistas: la mayoría espera crecimiento leve a modesto en los próximos meses, aunque los <strong>aranceles y política federal generaron incertidumbre</strong>.',
+      ]
+    },
+    consumer: {
+      status: 'flat',
+      tag: 'Gasto mixto',
+      bullets: [
+        'El gasto del consumidor creció levemente en la mayoría de los distritos, impulsado en gran parte por la temporada navideña. El gasto fue más fuerte en <strong>consumidores de altos ingresos</strong>, con mayor demanda de bienes de lujo, viajes y actividades experienciales.',
+        'Los <strong>consumidores de bajos y medios ingresos</strong> con mayor sensibilidad al precio y renuencia a gastar en bienes no esenciales. Las <strong>ventas de autos estables a la baja</strong> en la mayoría de los distritos.',
+        'El turismo fue bifurcado: hoteles de lujo y temporada navideña en NYC con buen desempeño; segmentos de valor y medios afectados por cautela del consumidor y clima invernal.',
+        'El comercio minorista de calle reportó una <strong>temporada navideña suave</strong>, con festivales y eventos promocionales como apoyo. El turismo canadiense siguió afectando ventas en partes de Maine.',
+      ]
+    },
+    prices: {
+      status: 'hot',
+      tag: 'Presión energética',
+      bullets: [
+        'Los precios crecieron a un ritmo moderado en la gran mayoría de los distritos; solo 2 reportaron crecimiento leve. La <strong>presión de costos por aranceles</strong> fue tema consistente en todos los distritos.',
+        'Varios contactos que inicialmente absorbieron costos arancelarios <strong>comenzaron a trasladarlos a clientes</strong> al agotarse inventarios pre-arancel o al crecer la presión para preservar márgenes.',
+        'Los <strong>costos de energía y seguros</strong>: carga significativa sobre los márgenes. Sectores como retail y restaurantes mostraron mayor resistencia a trasladar costos por sensibilidad al precio.',
+        'De cara al futuro, las empresas esperaban cierta moderación en el crecimiento de precios, pero anticipaban que los precios <strong>se mantendrían elevados</strong> mientras procesaban los mayores costos.',
+      ]
+    },
+    labor: {
+      status: 'flat',
+      tag: 'Mercado estable',
+      bullets: [
+        'El <strong>empleo sin cambios en 8 de 12 distritos</strong>. La contratación mayormente para <strong>cubrir vacantes</strong>, no nuevos puestos. Múltiples distritos reportaron mayor uso de <strong>trabajadores temporales</strong>.',
+        'Las empresas reportaron dificultades para <strong>trabajadores calificados en ingeniería, salud y oficios</strong>. Varios contactos reportaron que menos trabajadores cambiaron de empleos.',
+        'Los salarios crecieron a <strong>ritmo moderado</strong>, con múltiples contactos indicando que el crecimiento salarial había vuelto a niveles "normales". Beneficios crecieron moderadamente, con <strong>mayores costos de seguro de salud</strong>.',
+        'Múltiples contactos exploraron la implementación de IA principalmente para mejorar la productividad. El impacto actual de <strong>IA en el empleo fue limitado</strong>, con efectos más significativos anticipados en años venideros.',
+      ]
+    },
+    manufacturing: {
+      status: 'flat',
+      tag: 'Resultados mixtos',
+      bullets: [
+        'La manufactura fue mixta: <strong>5 distritos crecimiento y 6 contracción</strong>. Data centers e infraestructura energética fueron motores clave de nuevas órdenes en los distritos con crecimiento.',
+        'Fortaleza en <strong>acero, metales, eléctricos, maquinaria y químicos</strong> en varios distritos. Dallas reportó manufactura "vigorous rebound" liderada por durables y no durables.',
+        'Debilidades en <strong>hogar, agroindustrial, papel y madera</strong>. Los <strong>aranceles elevaron costos</strong> de materias primas e incertidumbre en órdenes futuras.',
+        'Las perspectivas <strong>relativamente optimistas</strong> en varios distritos, con expectativas de crecimiento en los próximos 6 meses por encima de promedios históricos.',
+      ]
+    },
+    residential: {
+      status: 'neg',
+      tag: 'Actividad a la baja',
+      bullets: [
+        'Las ventas residenciales <strong>a la baja en mayoría de distritos</strong>, afectadas por <strong>tasas hipotecarias, asequibilidad e inventario bajo</strong>. El gobierno shutdown retrasó tramitaciones hipotecarias en Boston y otros distritos.',
+        'Los precios <strong>subieron moderadamente</strong> en la mayoría de mercados por escasez de oferta. El inventario subió marcadamente en noviembre en la mayoría del mercado.',
+        'El alquiler <strong>tenso en NYC (rentas en máximos históricos)</strong>; en mercados con sobreoferta (Dallas, Atlanta, Mountain West) se reportaron <strong>concesiones y rentas a la baja</strong>.',
+        'Las perspectivas para la primavera fueron positivas en varios distritos, con expectativas de demanda reprimida y mayor actividad estacional. Constructores continuaron ofreciendo incentivos.',
+      ]
+    },
+    commercial: {
+      status: 'pos',
+      tag: 'Data centers lideran',
+      bullets: [
+        'Los <strong>data centers: segmento más robusto</strong> a nivel nacional, impulsando construcción comercial, manufactura y demanda energética. Múltiples distritos los citaron como el principal driver de actividad.',
+        'Las <strong>oficinas Clase A mejoraron en NYC</strong> (midtown south y downtown con demanda fuerte) y otras ciudades; <strong>espacios de menor calidad siguieron débiles</strong>.',
+        'La construcción no residencial fue mixta: <strong>data centers y salud</strong> como principales proyectos; industrial y logística más débiles en algunos mercados. Costos elevados frenaron proyectos en Boston.',
+        'El sector retail mostró vacantes moderadas con fundamentos estables. Demanda multifamiliar con alta vacancia en mercados saturados pero tenso en NYC y zonas de alta demanda.',
+      ]
+    },
+    banking: {
+      status: 'flat',
+      tag: 'Condiciones estables',
+      bullets: [
+        'Las condiciones bancarias fueron estables o mejorando. La <strong>préstamos comerciales: principal área de fortaleza</strong>. Demanda de hipotecas mostró cierta mejoría estacional en algunos distritos.',
+        'Los <strong>estándares de crédito endurecidos levemente</strong> en varios distritos, especialmente para préstamos automotrices y agrícolas. Tasas de morosidad subieron levemente en algunas categorías.',
+        'Los bancos con <strong>mayor incertidumbre sobre calidad futura de carteras</strong>. Contactos de banca regional esperaban crecimiento en préstamos comerciales por alivio regulatorio.',
+        'Actividad de fusiones y adquisiciones aumentó en empresas grandes. Depósitos crecieron en diciembre en varios distritos, terminando el año levemente más altos que el año anterior.',
+      ]
+    },
+    transport: {
+      status: 'flat',
+      tag: 'Actividad mixta',
+      bullets: [
+        'La transporte <strong>mixto: 3 distritos en contracción</strong> y 2 crecimiento modesto. Clima invernal severo disrumpió operaciones en múltiples distritos.',
+        'Puertos del Distrito Richmond reportaron caídas en tráfico; volúmenes presionando márgenes. <strong>Truckload en mínimos récord persistentes</strong> durante todo el año.',
+        'Transporte de carga ferroviario con fortaleza relativa. Aerolíneas con demanda sólida para viajes de fin de año, con el Distrito St. Louis reportando diciembre casi 10% más alto que el año anterior.',
+        'Camioneros reportaron reducción de capacidad por CDLs más estrictos y clima; <strong>fletes al alza a pesar de demanda suave</strong>.',
+      ]
+    },
+    agriculture: {
+      status: 'flat',
+      tag: 'Mixto por sector',
+      bullets: [
+        'Las condiciones agrícolas fueron mayormente planas. Los precios de cultivos subieron algo (soya y trigo al alza; maíz a la baja), pero los <strong>costos de insumos comprimiendo márgenes</strong>.',
+        'La <strong>ganadería con precios sólidos</strong> como principal fuente de fortaleza. Precios de huevos bajaron. La maderera enfrentó serios desafíos con cierres de plantas.',
+        'Agricultores de cultivos bajo mayor estrés financiero; tasas de repago de préstamos deteriorando levemente. Río Mississippi con niveles bajos reduciendo capacidad de barcazas.',
+        'Un <strong>gran empacador en Nebraska: cierre de planta</strong> en enero 2026, representando cerca del <strong>~25% del empleo del condado</strong>.',
+      ]
+    },
+    energy: {
+      status: 'neg',
+      tag: 'Actividad en declive',
+      bullets: [
+        'La petróleo y gas <strong>declinó moderadamente</strong> en el Distrito de Kansas City, con precios <strong>por debajo de niveles rentables</strong> que restringieron la perforación y el gasto de capital.',
+        'Productores esperan precios <strong>WTI ~$60 en 2026</strong>, por debajo del umbral rentable nuevos pozos de forma rentable. Algunas actividades se desplazaron a regiones más enfocadas en gas natural.',
+        'Refinerías del Golfo reportaron márgenes elevados. Demanda eléctrica descrita como "insaciable" por expansión de data centers y migración al Sureste.',
+        'La mayoría de los contactos de energía cubrió cerca del 25% de su producción de petróleo y 30% de gas para el año venidero. Exportaciones de LNG y producción de energía apoyadas por dinámicas globales.',
+      ]
+    },
+    tech: {
+      status: 'pos',
+      tag: 'IA impulsa sector',
+      bullets: [
+        'Los <strong>data centers: segmento más dinámico</strong>, impulsando manufactura, construcción comercial y demanda energética en prácticamente todos los distritos.',
+        'La <strong>adopción de IA aceleró</strong>: múltiples firmas reportaron uso de IA para eficiencias en back-office y manufactura, mayormente como complemento productivo.',
+        'Un contacto en Boston notó que una firma de IT <strong>pausó contratación por IA</strong> en su lugar. La demanda para marketing y tech en general se suavizó en Nueva York por eficiencias de IA.',
+        'Manufactureros del Distrito de San Francisco reportaron <strong>interés renovado en automatización robótica</strong> por costos laborales elevados. Demanda de capital para IA sostenida en empresas grandes.',
+      ]
+    },
+    geopolitics: {
+      status: 'flat',
+      tag: 'Aranceles e incertidumbre',
+      bullets: [
+        'Los <strong>aranceles: factor geopolítico dominante</strong>: citados por prácticamente todos los distritos como driver de aumentos de costos y como fuente de incertidumbre en decisiones de inversión.',
+        'El <strong>gobierno federal parcialmente cerrado (shutdown)</strong> durante el período, impactando contratistas de defensa en Richmond, tramitaciones hipotecarias en Boston y servicios en varios distritos.',
+        'La incertidumbre <strong>frenó inversiones de capital</strong> en múltiples sectores; varios contactos adoptaron postura de <strong>espera (wait-and-see)</strong>.',
+        'Riesgos geopolíticos en Irán citados como factor de presión sobre precios del petróleo. Incertidumbre sobre subsidios ACA y cambios a Medicaid generaron cautela en sector salud.',
+      ]
+    },
+    vulnerable: {
+      status: 'neg',
+      tag: 'Demanda social al alza',
+      bullets: [
+        'Hogares de bajos y medios ingresos bajo presión creciente: casi 7 de cada 10 trabajadores de bajos ingresos en Cleveland indicaron que sus gastos aumentaron; la mitad dijo que sus <strong>ingresos no cubrían sus costos</strong>.',
+        'Organizaciones sin fines de lucro reportaron alta demanda con financiamiento más ajustado: fondos federales reducidos o inestables, mayor competencia por grants privados, <strong>recortes de personal</strong>.',
+        'En Nueva York, poblaciones vulnerables y adultos mayores enfrentaron <strong>barreras al seguro médico</strong> por alzas de primas y pérdida de subsidios. Dificultades de acceso digital limitaron uso de telemedicina.',
+        'En Dallas, demanda de servicios de asistencia alimentaria permaneció elevada aunque el impacto inicial del SNAP se atenuó. Migrantes con temor a enforcement redujeron participación laboral en algunas áreas.',
+      ]
+    },
+  },
+  'feb2026': {
+    label: 'Feb 2026',
+    economy: {
+      status: 'flat',
+      tag: 'Expansión leve',
+      bullets: [
+        'La actividad económica creció a un ritmo <strong>leve a moderado en 7 de 12 distritos; 5 plana o en caída</strong>, más que los 4 del período anterior. El panorama general mejoró levemente pero con incertidumbre persistente.',
+        'El consumo aumentó levemente en términos agregados, aunque 2 distritos reportaron caídas continuas; el clima invernal severo y la incertidumbre económica frenaron el gasto en varios distritos.',
+        'La manufactura mejoró: <strong>8 distritos con crecimiento, 2 caídas</strong>. Los data centers y la infraestructura energética fueron motores clave de nuevas órdenes.',
+        'Las perspectivas económicas fueron optimistas en su mayoría, con la mayoría de distritos esperando crecimiento leve a moderado en los próximos meses, aunque los <strong>aranceles y política federal generaron incertidumbre</strong>.',
+      ]
+    },
+    consumer: {
+      status: 'flat',
+      tag: 'Gasto mixto',
+      bullets: [
+        'El gasto del consumidor aumentó levemente en términos netos, pero con resultados muy mixtos: tormentas invernales en múltiples distritos frenaron el tráfico de tiendas y turismo; 2 distritos reportaron caídas continuas.',
+        'Se observó <strong>bifurcación creciente por ingreso</strong>: consumidores de altos ingresos resilientes; hogares de bajos ingresos <strong>retrocediendo en gasto discrecional</strong>, buscando descuentos y usando "compra ahora, paga después".',
+        'Las <strong>ventas de autos nuevos cayeron</strong> por asequibilidad, clima y falta de incentivos de fabricantes; <strong>usados resilientes como opción de trade-down</strong>.',
+        'El turismo y la hospitalidad mostraron resultados mixtos: hoteles de lujo y Broadway en NYC con buen desempeño; segmentos de valor y viajes afectados por clima y mayor cautela del consumidor.',
+      ]
+    },
+    prices: {
+      status: 'hot',
+      tag: 'Presión energética',
+      bullets: [
+        'Los precios crecieron a un ritmo moderado en la mayoría de los distritos: 8 reportaron crecimiento moderado y 4 crecimiento leve o modesto. Los <strong>aranceles mencionados por 9 de 12 distritos</strong> como driver de costos.',
+        'Los costos de insumos no laborales aumentaron en múltiples categorías: seguros, servicios públicos, energía, metales y materias primas. Varios distritos reportaron presiones de <strong>seguro de salud "grandes" o insostenibles</strong>.',
+        'La capacidad de trasladar costos al consumidor fue desigual: manufacturas lo lograron mejor (algunos planeando pasar el 100% de aranceles en 2026); firmas de cara al consumidor encontraron mayor resistencia.',
+        'En general, las empresas esperaban que los precios subieran a un ritmo algo más lento en el corto plazo, aunque los aranceles mantenían incertidumbre sobre la trayectoria de costos.',
+      ]
+    },
+    labor: {
+      status: 'flat',
+      tag: 'Mercado estable',
+      bullets: [
+        'El <strong>empleo estable en 7 de 12 distritos</strong>; predominó el entorno "<strong>low-hire, low-fire</strong>". Varias empresas usaron IA y automatización para mejorar eficiencia, mayoritariamente como complemento, no como reemplazo de trabajadores.',
+        'Los salarios crecieron a un ritmo modesto a moderado. Persistieron presiones salariales en oficios calificados y salud; en tech y servicios profesionales la competencia salarial se moderó.',
+        'La disponibilidad de mano de obra mejoró en general, con más candidatos para puestos abiertos; algunos sobreCualificados. Sin embargo, oficios calificados y salud mantuvieron escasez.',
+        '<strong>Impacto de enforcement migratorio fue notable</strong> en varios distritos (Minneapolis, Boston, Chicago): <strong>trabajadores inmigrantes abandonando empleos</strong>, escasez en jardinería y manufactura, caída de demanda en comercios locales.',
+      ]
+    },
+    manufacturing: {
+      status: 'pos',
+      tag: 'Crecimiento leve',
+      bullets: [
+        '8 distritos reportaron distintos grados de crecimiento manufacturero; 2 reportaron caídas. Data centers, infraestructura energética y defensa/aeroespacial fueron los motores dominantes de nuevas órdenes.',
+        'Crecimiento sólido en acero, metales, componentes eléctricos, químicos y maquinaria. En Dallas, manufactura rebotó "vigorosamente", liderada por durables y no durables. En Chicago, acero y maquinaria crecieron.',
+        'Debilidades en manufactura para mejora del hogar, agroindustrial, papel/impresión y madera. Los aranceles elevaron costos de materias primas (metales en particular) y generaron incertidumbre en órdenes futuras.',
+        'Las perspectivas <strong>relativamente optimistas</strong>, con expectativas de crecimiento en los próximos 6 meses por encima de promedios históricos en varios distritos.',
+      ]
+    },
+    residential: {
+      status: 'neg',
+      tag: 'Actividad a la baja',
+      bullets: [
+        'Las ventas <strong>cayeron levemente</strong>, afectadas por <strong>tasas hipotecarias, asequibilidad e inventario bajo</strong>. Las tormentas invernales severas agravaron la situación en varios mercados.',
+        'El inventario siguió siendo escaso, especialmente en Massachusetts y zonas del Noreste; algunos mercados del Mountain West y Southeast mostraron mayor oferta. Precios de casas unifamiliares subieron moderadamente.',
+        'Perspectivas positivas para la primavera en varios distritos: expectativas de demanda reprimida, tasas ligeramente a la baja y mayor actividad estacional. Constructores siguen ofreciendo incentivos con efectividad variable.',
+        'Mercado de alquiler multifamiliar tenso en NYC (rentas en máximos históricos); en mercados con sobreoferta (Dallas, Atlanta, Mountain West) se reportaron <strong>concesiones y rentas a la baja</strong>.',
+      ]
+    },
+    commercial: {
+      status: 'pos',
+      tag: 'Data centers lideran',
+      bullets: [
+        'Los <strong>data centers: segmento más robusto</strong> a nivel nacional, impulsando construcción comercial, manufactura y demanda energética. Múltiples distritos los citaron como el principal driver de actividad.',
+        'Las <strong>oficinas Clase A mejoraron en NYC</strong> (midtown south y downtown con demanda fuerte), Richmond y otras ciudades; <strong>espacios de menor calidad siguieron débiles</strong>. Tendencia hacia menor tamaño de espacios.',
+        'La construcción no residencial fue mixta: <strong>data centers y salud</strong> como principales proyectos nuevos; industrial y logística más débiles en algunos mercados. Costos de construcción elevados frenaron proyectos en Boston.',
+        'El sector retail mostró vacantes moderadas con fundamentos estables. Multifamiliar con alta vacancia en mercados saturados (Atlanta, Dallas) pero tenso en NYC y zonas de alta demanda.',
+      ]
+    },
+    banking: {
+      status: 'flat',
+      tag: 'Condiciones estables',
+      bullets: [
+        'La actividad bancaria fue generalmente estable; demanda de préstamos comerciales como principal área de fortaleza. Condiciones financieras se aflojaron levemente en Chicago.',
+        'Los <strong>estándares de crédito endurecidos levemente</strong> en varios distritos, especialmente para préstamos automotrices y agrícolas. Tasas de morosidad subieron levemente en algunas categorías.',
+        'Demanda de hipotecas residenciales mostró cierta mejoría en algunos distritos (Cleveland con demanda "relativamente buena" pese a estacionalidad). Actividad de fusiones y adquisiciones aumentó en empresas grandes.',
+        'Bancos reportaron mayor incertidumbre respecto a la calidad futura de sus carteras; contactos de banca regional esperaban crecimiento en préstamos comerciales e industriales por alivio regulatorio.',
+      ]
+    },
+    transport: {
+      status: 'flat',
+      tag: 'Actividad mixta',
+      bullets: [
+        'La transporte <strong>mixto: 3 distritos en contracción</strong> y 2 crecimiento modesto. Clima invernal severo disrumpió operaciones en múltiples distritos y afectó volúmenes de carga.',
+        'Puertos del Distrito Richmond reportaron caídas en tráfico: "tariffs are finally having an impact", con inventarios manejados con cautela y acumulación de contenedores vacíos. Volúmenes presionando márgenes.',
+        'Transporte de carga en camión cayó levemente (vs. stockpiling pre-aranceles de 2025); ferrocarril y carga de data center como focos de resiliencia. Demanda de carga aérea pequeña creció en Dallas.',
+        'Camioneros reportaron reducción de capacidad por CDL más estrictos y clima; <strong>fletes al alza a pesar de demanda suave</strong>, similar a condiciones pandémicas según algunos contactos.',
+      ]
+    },
+    agriculture: {
+      status: 'flat',
+      tag: 'Mixto por sector',
+      bullets: [
+        'Las condiciones agrícolas fueron mayormente planas. Los precios de cultivos aumentaron algo (soya, trigo al alza; maíz a la baja), pero los costos de insumos (fertilizantes, seguros) siguieron comprimiendo márgenes.',
+        'La <strong>ganadería con precios sólidos</strong> como principal fuente de fortaleza. Precios de huevos cayeron. Ranchland y tierras ganaderas apreciaron; cropland plana.',
+        'Agricultores de cultivos bajo mayor estrés financiero; tasas de repago de préstamos deteriorando levemente. En Arkansas, incertidumbre climática y costos de insumos dificultaron obtener créditos para siembra.',
+        'Ganaderos con restricciones: sequía en Texas elevó preocupaciones; ban on Mexican cattle imports afectó meatpackers. Expectativas de ingreso agrícola 2026 similares a 2025 en el Medio Oeste.',
+      ]
+    },
+    energy: {
+      status: 'pos',
+      tag: 'Actividad en alza',
+      bullets: [
+        'La actividad energética <strong>creció modestamente</strong>: en Kansas City, mayor precio del petróleo y gas apoyó perforación adicional; en Oklahoma, gas subió por frío invernal; en Atlanta, LNG y petróleo con producción robusta.',
+        'En Dallas, actividad de perforación bajó levemente pero wellcompletions aumentaron; productores esperan WTI cerca de $60, con sesgo a la baja. En <strong>refinación con márgenes elevados</strong> por alta utilización.',
+        'Demanda eléctrica descrita como "insaciable" por data centers y migración poblacional al Sureste. Utilities enfocadas en expandir capacidad para satisfacer crecimiento sostenido.',
+        'Producción de carbón en Wyoming moderó desde máximos; exportaciones de LNG y gas natural apoyadas por dinámicas globales. Riesgo geopolítico (Irán) citado como factor de upside/downside en precios.',
+      ]
+    },
+    tech: {
+      status: 'pos',
+      tag: 'IA impulsa sector',
+      bullets: [
+        'Los <strong>data centers: segmento más dinámico</strong>, impulsando manufactura, construcción comercial y demanda energética en prácticamente todos los distritos.',
+        'La adopción de IA en operaciones corporativas se aceleró: múltiples firmas reportaron uso de IA para eficiencias en back-office y manufactura, mayormente como complemento productivo, no como reemplazo masivo de trabajadores.',
+        'En tecnología, <strong>layoffs en Pacific Northwest</strong> (San Francisco); demanda de IT especializado alta en NYC y Chicago. Contratación de juniors tech más limitada; <strong>sobreoferta de candidatos entry-level</strong>.',
+        'Manufactureros del Distrito de San Francisco reportaron "<strong>interés renovado en automatización robótica</strong>" por costos laborales y salarios mínimos más altos. Demanda de capital para IA sostenida en empresas grandes.',
+      ]
+    },
+    geopolitics: {
+      status: 'flat',
+      tag: 'Aranceles e incertidumbre',
+      bullets: [
+        'Los <strong>aranceles: factor geopolítico dominante</strong>: citados por 9 de 12 distritos como driver de aumentos de costos. Empresas reportaron distintos grados de traslado al consumidor, con aceleración del pass-through en 2026.',
+        'La incertidumbre sobre política comercial, federal y de tasas frenó inversiones de capital en múltiples sectores; varios contactos adoptaron postura de espera (wait-and-see) en proyectos de capital y contratación.',
+        'El <strong>enforcement migratorio: factor disruptivo</strong> en varios distritos (Minneapolis, Boston, NYC): impacto en staffing, demanda local y actividad de negocios de comunidades inmigrantes.',
+        'Riesgos geopolíticos en Irán citados en Kansas City como factor de presión sobre precios de petróleo. Incertidumbre sobre subsidios ACA y cambios a Medicaid generaron cautela en sector salud.',
+      ]
+    },
+    vulnerable: {
+      status: 'neg',
+      tag: 'Demanda social al alza',
+      bullets: [
+        'Organizaciones sin fines de lucro reportaron alta demanda de servicios con financiamiento más ajustado: fondos federales reducidos o inestables, mayor competencia por grants privados, <strong>recortes de personal</strong>.',
+        'En Cleveland, clientes de nonprofits con <strong>deterioro financiero</strong> por costos de comida, servicios y vivienda; más empleados solicitando asistencia alimentaria y de renta; <strong>adultos mayores buscando empleo</strong> para llegar a fin de mes.',
+        'En Dallas, nonprofit tuvo que recortar beneficios de salud de empleados por costos; preocupación por alza de población sin seguro médico al expirar subsidios ACA y cambios a Medicaid en 2026.',
+        'En Minneapolis, trabajadores inmigrantes con pérdidas de ingresos por enforcement; organización de idiomas reportó <strong>43% de caída en inscripciones</strong>. En Boston, varios negocios pequeños con disrupciones por enforcement migratorio.',
+      ]
+    },
+  },
+  'apr2026': {
+    label: 'Abr 2026',
+    economy: {
+      status: 'flat',
+      tag: 'Expansión leve',
+      bullets: [
+        'La actividad económica <strong>creció a un ritmo leve a modesto en 8 de 12 distritos</strong>; 2 reportaron poco cambio y 2 registraron caídas leves a moderadas. El conflicto en Medio Oriente fue citado como la principal fuente de incertidumbre.',
+        'La manufactura creció levemente a moderadamente en la mayoría de los distritos. La actividad bancaria fue generalmente estable con demanda de préstamos estable a moderadamente al alza.',
+        'El gasto del consumidor aumentó levemente pese al mal clima invernal en algunas regiones y los precios del combustible más altos. Las perspectivas de los negocios variaron en medio de incertidumbre generalizada.',
+        'Los mercados de bienes raíces comerciales mejoraron, con fortaleza en propiedades industriales, especialmente proyectos de data centers. La actividad residencial se suavizó por el alza en tasas hipotecarias.',
+      ]
+    },
+    consumer: {
+      status: 'flat',
+      tag: 'Gasto mixto',
+      bullets: [
+        'El gasto del consumidor creció levemente en términos agregados. Se observó bifurcación por ingreso: consumidores de mayores ingresos resilientes; consumidores de bajos ingresos bajo mayor presión financiera.',
+        'Múltiples distritos reportaron señales de tensión financiera del consumidor: aumento del uso de <strong>bancos de alimentos</strong>, mayor sensibilidad al precio y preferencia por productos de descuento y de primera necesidad.',
+        'Las ventas de autos nuevos mostraron resultados mixtos: algunos distritos reportaron caídas por asequibilidad y precios del combustible; incentivos y <strong>financiamiento al 0%</strong> más extendido.',
+        'El turismo y la hospitalidad mostraron resultados variados: el segmento de lujo y cruceros resistió bien, mientras el segmento de valor se debilitó por el alza del combustible y el clima invernal severo.',
+      ]
+    },
+    prices: {
+      status: 'hot',
+      tag: 'Presión energética',
+      bullets: [
+        'Los precios crecieron a un ritmo moderado en la gran mayoría de los distritos. Los <strong>costos de energía y combustible subieron marcadamente</strong>, atribuidos al conflicto en Medio Oriente.',
+        'Los costos de insumos <strong>superaron precios de venta, comprimiendo márgenes</strong>. Los precios de metales (acero, cobre, aluminio) también subieron por aranceles.',
+        'Los <strong>costos de tecnología aumentaron en hardware y software</strong>. Las primas de seguros y los costos de atención médica continuaron escalando en prácticamente todos los distritos.',
+        'La capacidad de trasladar costos al consumidor fue desigual: firmas manufactureras lo lograron mejor; negocios de cara al consumidor encontraron mayor resistencia por la sensibilidad al precio.',
+      ]
+    },
+    labor: {
+      status: 'flat',
+      tag: 'Mercado estable',
+      bullets: [
+        'El <strong>empleo estable a levemente al alza</strong>; un distrito reportó leve caída. Predominó el entorno de baja contratación y bajos despidos (<strong>low-hire, low-fire</strong>), con alta rotación de reemplazo.',
+        'Varios distritos reportaron mayor demanda de <strong>trabajadores temporales o por contrato</strong>, señal de cautela para comprometerse a contrataciones permanentes. La disponibilidad de mano de obra mejoró en general.',
+        'Los salarios continuaron creciendo a un ritmo modesto a moderado. Presiones salariales específicas persistieron en salud y oficios calificados, aunque la competencia salarial general fue contenida.',
+        'La <strong>IA sin impacto significativo en dotación</strong> general aún, aunque algunos distritos notaron que mejoras de productividad impulsadas por IA permitieron a empresas demorar o reducir contrataciones.',
+      ]
+    },
+    manufacturing: {
+      status: 'pos',
+      tag: 'Crecimiento leve',
+      bullets: [
+        'La manufactura creció levemente a moderadamente en la mayoría de los distritos. Los <strong>data centers y defensa</strong>: motores clave de la demanda de nuevas órdenes.',
+        'Productos químicos, plásticos, metales primarios y fabricados mostraron crecimiento modesto. Algunos productores reportaron mayor demanda vinculada al sector aeroespacial y defensa por el conflicto en Medio Oriente.',
+        'La incertidumbre por aranceles y el conflicto en Medio Oriente fue la principal restricción: cerca del <strong>82% de fabricantes en Filadelfia</strong> reportaron incertidumbre que <strong>limitó capacidad</strong> al menos levemente la utilización de capacidad.',
+        'Las perspectivas de manufactura se mantuvieron relativamente optimistas en varios distritos, con expectativas de crecimiento en los próximos 6 meses por encima de promedios históricos.',
+      ]
+    },
+    residential: {
+      status: 'neg',
+      tag: 'Actividad a la baja',
+      bullets: [
+        'Actividad residencial <strong>a la baja en varios distritos</strong> por la incertidumbre elevada y el alza de tasas hipotecarias. El inventario siguió siendo bajo en muchos mercados.',
+        'Los precios de viviendas se mantuvieron al alza en la mayoría de mercados por la escasez de oferta. Algunos mercados mostraron señales de mejora estacional post-invierno (Cleveland, St. Louis).',
+        'El <strong>primera compra: segmento más débil</strong>; el segmento de lujo y move-up mostró mayor resiliencia. Constructores continuaron ofreciendo incentivos y buydowns de tasas con efectividad variable.',
+        'El mercado de alquiler multifamiliar permaneció tenso en zonas clave; algunos mercados con sobreoferta (Mountain West, partes del Southeast) registraron concesiones de arrendadores.',
+      ]
+    },
+    commercial: {
+      status: 'pos',
+      tag: 'Data centers lideran',
+      bullets: [
+        'Los mercados de bienes raíces comerciales mejoraron, con fortaleza notable en propiedades industriales y proyectos de data centers a nivel nacional.',
+        'La <strong>demanda de oficinas Clase A sólida</strong>, especialmente en Nueva York (sector financiero y firmas de IA); espacios de menor categoría siguieron débiles. El <strong>subarrendamiento en NYC disminuyó</strong>.',
+        'La construcción no residencial siguió enfocada en data centers y proyectos de salud en la mayoría de los distritos; la construcción de oficinas permaneció limitada.',
+        'El sector retail mostró vacantes moderadas con fundamentos resilientes. La demanda industrial fue sólida, impulsada por logística de terceros y crecimiento manufacturero.',
+      ]
+    },
+    banking: {
+      status: 'flat',
+      tag: 'Condiciones estables',
+      bullets: [
+        'La actividad bancaria fue generalmente estable; la demanda de préstamos estuvo estable a moderadamente al alza. Los estándares de crédito se endurecieron algo en varios distritos.',
+        'Las <strong>morosidad aumentó levemente</strong> en hipotecas y crédito al consumidor. Bancos en varios distritos anticiparon mayor deterioro futuro, especialmente en consumo y agricultura.',
+        'La hipotecas con <strong>breve repunte cuando tasas bajaron de 6%</strong>, pero se revirtió rápidamente al subir de nuevo las tasas.',
+        'Banqueros citaron el conflicto en Medio Oriente como fuente creciente de incertidumbre económica para clientes; el shutdown parcial de gobierno y los aranceles también contribuyeron a la cautela.',
+      ]
+    },
+    transport: {
+      status: 'neg',
+      tag: 'Costos al alza',
+      bullets: [
+        'Los <strong>costos de flete aumentaron marcadamente</strong> por alza del diésel relacionada al conflicto en Medio Oriente; <strong>recargos de combustible generalizados</strong>.',
+        'Puertos del Distrito Richmond registraron cierta recuperación por restocking conservador y efecto temporal post-decisión de la Corte Suprema sobre aranceles, aunque con preocupaciones por precios de combustible.',
+        'El <strong>ferroviario con volúmenes al alza</strong>, beneficiándose de la sustitución desde camión. Aerolíneas reportaron demanda sólida pero señalaron el combustible como principal riesgo.',
+        'Varios contactos de transporte anticiparon que la demanda probablemente declinaría si el conflicto en Medio Oriente se prolongaba, dado su impacto en precios de combustible y cadenas de suministro.',
+      ]
+    },
+    agriculture: {
+      status: 'flat',
+      tag: 'Mixto por sector',
+      bullets: [
+        'Las condiciones agrícolas fueron mixtas: los precios de cultivos subieron (maíz, soya, trigo), ayudando a compensar los fuertes aumentos en costos de fertilizantes y combustible vinculados al conflicto en Medio Oriente.',
+        'La ganadería (ganado, cerdos, huevos, lácteos) mostró precios sólidos como fuente de fortaleza. La industria maderera continuó enfrentando desafíos severos por cierres de plantas y daños del Huracán Helene (2024).',
+        'Varios distritos reportaron que la posición financiera de agricultores <strong>sin mejora</strong> respecto al año anterior, con lento <strong>deterioro en tasas de repago</strong> y aumento de deuda acumulada.',
+        'La siembra avanzó con buen ritmo en los distritos del Midwest. Algunos productores ajustaron planes de cultivo hacia soya por sus menores requerimientos de fertilizante frente al maíz.',
+      ]
+    },
+    energy: {
+      status: 'flat',
+      tag: 'Actividad cautelosa',
+      bullets: [
+        'La actividad energética subió levemente a medida que los precios del petróleo aumentaron, aunque la mayoría de productores se mostraron cautelosos sobre aumentar la perforación por la incertidumbre de permanencia de los precios altos.',
+        'En el Distrito de Kansas City, los ingresos y utilidades del sector petróleo y gas aumentaron, pero sin incrementos materiales en plataformas activas o gasto de capital por disciplina de la industria.',
+        'Refinerías del Golfo reportaron márgenes elevados, especialmente en diésel y combustible de aviación, beneficiadas por el <strong>cierre del Estrecho de Ormuz</strong> y la disrupción de capacidad de refinación en Medio Oriente.',
+        'Algunos productores incrementaron actividad de cobertura (hedging) para asegurar precios actuales. La demanda eléctrica fue descrita como "insaciable" por expansión de data centers e industria.',
+      ]
+    },
+    tech: {
+      status: 'pos',
+      tag: 'IA impulsa sector',
+      bullets: [
+        'La <strong>infraestructura IA (data centers): segmento más dinámico</strong> de la economía, impulsando manufactura, construcción comercial, demanda de energía eléctrica y transporte de equipos pesados.',
+        'La <strong>adopción de IA aceleró</strong>: múltiples firmas reportaron demoras o reducciones en contrataciones gracias a mejoras de productividad. La <strong>demanda entry-level tech cayó</strong>.',
+        'Los costos de hardware y software tecnológico aumentaron marcadamente (una institución educativa reportó alzas muy pronunciadas en hardware de cómputo y alzas moderadas a grandes en software).',
+        'El arrendamiento de oficinas por firmas de IA en Nueva York fue sólido; contratos tendieron a ser más pequeños y de menor plazo, reflejando el carácter experimental de muchas compañías del sector.',
+      ]
+    },
+    geopolitics: {
+      status: 'neg',
+      tag: 'Conflicto Medio Oriente',
+      bullets: [
+        'El <strong>conflicto en Medio Oriente: factor dominante</strong>: citado por prácticamente todos los distritos como principal fuente de incertidumbre en decisiones de contratación, precios e inversión de capital.',
+        'Los <strong>energía y combustible se dispararon</strong>, con impactos en cascada en fletes, fertilizantes, plásticos y materiales de petróleo en toda la cadena productiva.',
+        'Muchas empresas adoptaron postura de espera (wait-and-see); contrataciones y proyectos de capital se pausaron o retrasaron en múltiples sectores y distritos.',
+        'Las exportaciones agrícolas y algunas manufacturas vieron disrupciones en cadenas de suministro globales. El <strong>cierre del Estrecho de Ormuz</strong> disrumpió flujos de petróleo y petroquímicos.',
+      ]
+    },
+    vulnerable: {
+      status: 'neg',
+      tag: 'Demanda social al alza',
+      bullets: [
+        'Múltiples distritos reportaron signos de tensión financiera en hogares de bajos y medios ingresos: largas filas en bancos de alimentos, aumento en demanda de servicios sociales y mayor sensibilidad al precio.',
+        'Organizaciones sin fines de lucro reportaron financiamiento más ajustado: fondos federales y locales previos agotados con renovaciones de menor valor; varias redujeron personal pese a alta demanda de servicios.',
+        'En el Distrito de Cleveland, una encuesta semiannual de nonprofits reportó que la mayoría de clientes vio deterioro en su bienestar financiero en los últimos 6 meses por precios elevados.',
+        'En el Distrito de Kansas City, hogares de bajos ingresos enfrentan aumento en costos de seguros, servicios públicos y gasolina; <strong>delinquencias en tarjetas e hipotecas aumentaron</strong>.',
+      ]
+    },
+  },
+  'may2026': {
+    label: 'May 2026',
+    economy: {
+      status: 'flat',
+      tag: 'Expansión leve',
+      bullets: [
+        'La actividad <strong>creció levemente en 10 de 12 distritos</strong>; 1 con caída leve. El panorama general es de expansión débil con alta incertidumbre.',
+        'El sector manufacturero fue el <strong>punto más fuerte: 9 de 12 distritos</strong> reportaron crecimiento modesto a sólido, impulsado por data centers y gasto en defensa.',
+        'Las perspectivas para los próximos 6 meses <strong>mostraron poco cambio</strong> en las expectativas de crecimiento, pesando la incertidumbre geopolítica y señales de debilitamiento del consumidor.',
+        'El conflicto en Medio Oriente fue citado transversalmente como la principal fuente de incertidumbre y presión de costos en prácticamente todos los distritos.',
+      ]
+    },
+    consumer: {
+      status: 'neg',
+      tag: 'Demanda mixta',
+      bullets: [
+        'El consumo <strong>mixto y crecientemente bifurcado por ingreso</strong>: hogares de altos ingresos resilientes; <strong>clase media "exprimiendo cada dólar"</strong>; consumidores de bajos ingresos bajo mayor estrés financiero.',
+        'Aumento en el uso de tarjetas de crédito, menor frecuencia de visitas a tiendas y restaurantes, y mayor demanda de bienes de primera necesidad frente a discrecionales.',
+        'Las <strong>ventas de autos nuevos cayeron</strong> por problemas de asequibilidad y precios del combustible; sustitución hacia usados e híbridos.',
+        'El turismo y la hospitalidad mostraron resultados mixtos: el segmento de lujo resistió bien, mientras los segmentos de valor y viajes de media distancia retrocedieron por el alza del combustible.',
+      ]
+    },
+    prices: {
+      status: 'hot',
+      tag: 'Presión energética',
+      bullets: [
+        'Los precios <strong>aumentaron a ritmo moderado-fuerte</strong> en la mayoría de los distritos, superando el reporte anterior. El conflicto en Medio Oriente fue el principal driver vía energía y sus efectos de derrame.',
+        'Los costos de insumos <strong>subieron más rápido que los precios de venta</strong>, generando compresión de márgenes generalizada.',
+        'La capacidad de trasladar costos al consumidor fue desigual: manufacturas lo lograron mejor; firmas de cara al consumidor encontraron resistencia por la sensibilidad al precio.',
+        'Estrategias de mitigación adoptadas: optimización de cadenas de suministro, reducción de ofertas, absorción temporal de costos y <strong>recargos por combustible como "nueva normalidad"</strong>.',
+      ]
+    },
+    labor: {
+      status: 'flat',
+      tag: 'Mercado estable',
+      bullets: [
+        'El <strong>empleo sin cambios en 11 de 12 distritos</strong>; solo uno reportó crecimiento modesto. Predomina el entorno "bajo-contrato, bajo-despido" (<strong>low-hire, low-fire</strong>).',
+        'Las contrataciones más fuertes en <strong>manufactura (defensa y data centers)</strong> y en roles especializados de salud. La <strong>demanda entry-level tech cayó</strong>, en parte por automatización con IA.',
+        'Los salarios crecieron de forma modesta a moderada, en línea con la inflación. Varios empleadores implementaron ajustes adicionales para compensar el alza en costos de combustible y vida.',
+        'Los trabajadores mostraron mayor reluctancia a cambiar de empleo por incertidumbre económica; la inmigración más restrictiva generó escasez en sectores como jardinería y manufactura en algunos distritos.',
+      ]
+    },
+    manufacturing: {
+      status: 'pos',
+      tag: 'Crecimiento leve',
+      bullets: [
+        '<strong>9 de 12 distritos con crecimiento</strong> en manufactura. Los data centers y el gasto en defensa fueron los motores dominantes de nuevas órdenes.',
+        'Productores de metales, componentes eléctricos, maquinaria y semiconductores lideraron el alza. Algunos contactos compraron anticipadamente ante posibles alzas de precios.',
+        'Petroroquímicos y exportadores se beneficiaron de cadenas de suministro disrumpidas globalmente, pero enfrentaron mayor incertidumbre por el <strong>cierre del Estrecho de Ormuz</strong>.',
+        'Varios productores reconocieron que la fortaleza en <strong>data centers enmascarando debilidad</strong> en otras líneas (automotriz, agrícola, construcción residencial).',
+      ]
+    },
+    residential: {
+      status: 'neg',
+      tag: 'Mercado enfriado',
+      bullets: [
+        'Las ventas <strong>cayeron en mayoría de distritos</strong>, presionadas por <strong>tasas hipotecarias altas, asequibilidad deteriorada</strong> e incertidumbre geopolítica.',
+        'El inventario siguió siendo escaso en muchos mercados, manteniendo precios elevados a pesar de la menor demanda; en algunos mercados (SW Florida, Atlanta) los precios cayeron levemente.',
+        'El <strong>primera compra: segmento más débil</strong>; el segmento de lujo y move-up mostró mayor resiliencia. Constructores ofrecieron incentivos y buydowns de tasas con efectividad decreciente.',
+        'El mercado de alquiler multifamiliar permaneció tensionado en muchas zonas con rentas récord (NY), aunque en mercados saturados (Dallas, Atlanta) se registraron concesiones y caída de rentas.',
+      ]
+    },
+    commercial: {
+      status: 'flat',
+      tag: 'Mixto por sector',
+      bullets: [
+        'La construcción y el arrendamiento de <strong>data centers: segmento más robusto</strong>, demanda <strong>"sin afectar"</strong> por incertidumbre por la incertidumbre general.',
+        'Las <strong>Clase A resiliente</strong> (Manhattan con <strong>arrendamiento cercano a récords</strong>); espacios industriales y de logística se debilitaron por el alto costo del transporte marítimo y terrestre.',
+        'La construcción con <strong>presión de costos que retrasó o canceló proyectos</strong>; los constructores absorbieron aumentos para asegurar contratos.',
+        'El mercado multifamiliar se estabilizó pero con concesiones persistentes en mercados saturados; el comercial minorista tuvo dinámica mixta con vacantes moderadas.',
+      ]
+    },
+    banking: {
+      status: 'flat',
+      tag: 'Condiciones estables',
+      bullets: [
+        'Las condiciones bancarias <strong>estables en mayoría de distritos</strong>; la demanda de préstamos comerciales fue mixta mientras que hipotecas residenciales mostraron cierto repunte primaveral.',
+        'Los <strong>estándares de crédito endurecidos levemente</strong> en varios distritos; las <strong>morosidad al alza</strong> en hipotecas, consumidor y agricultura.',
+        'Condiciones financieras se tensionaron levemente en Chicago: alzas en tasas de préstamos empresariales y al consumidor, con caída en demanda de crédito automotriz.',
+        'Varios bancos con <strong>mayor incertidumbre sobre calidad futura de carteras</strong>, especialmente en consumo y agricultura, con anticipación de mayor deterioro en los próximos meses.',
+      ]
+    },
+    transport: {
+      status: 'neg',
+      tag: 'Costos al alza',
+      bullets: [
+        'Los fletes y transporte <strong>fuertemente impactados</strong>: <strong>recargos generalizados, márgenes muy comprimidos</strong> para camioneros, y sustitución hacia ferrocarril de corta distancia.',
+        'Los puertos del Distrito Richmond registraron más "<strong>blank sailings</strong>" (omisión de escalas) y caída en exportaciones de contenedores vacíos, señal de debilidad en expectativas de demanda.',
+        'Las aerolíneas con <strong>fuerte alza de tarifas (+25%</strong> en lo que va del año según un contacto de St. Louis) con riesgo de reducción de capacidad si el combustible persiste alto.',
+        'El transporte de carga en ferrocarril Clase I mostró aumentos en cargas intermodales y totales vs. año anterior, beneficiándose de la sustitución desde camión.',
+      ]
+    },
+    agriculture: {
+      status: 'neg',
+      tag: 'Condiciones débiles',
+      bullets: [
+        'Las condiciones agrícolas <strong>sin cambio o empeoraron</strong> en la mayoría de los distritos; los <strong>fertilizantes y combustible se intensificaron</strong>, comprimiendo márgenes ya estrechos.',
+        'El trigo en Kansas-Nebraska-Oklahoma con <strong>sequía severa</strong>; los canales de exportación disrumpidos por el conflicto en Medio Oriente afectaron a productores de arroz (Arkansas) y commodities de exportación.',
+        'Los precios del maíz, soya, trigo y algodón subieron, compensando parcialmente costos más altos; el ganado mostró precios sólidos como fuente de fortaleza en varios distritos.',
+        'La siembra avanzó bien en la mayoría de los distritos (por delante del promedio en Minnesota y Dakotas), pero la posición financiera de agricultores <strong>sin mejora</strong> respecto al año anterior.',
+      ]
+    },
+    energy: {
+      status: 'flat',
+      tag: 'Actividad contenida',
+      bullets: [
+        'La actividad energética aumentó levemente en dos mercados, pero los productores se mostraron cautelosos ante la incertidumbre sobre la duración del shock de oferta por el conflicto en Medio Oriente.',
+        'En el Distrito de Kansas City, el número de plataformas <strong>aumentaron pero sin recuperar niveles previos</strong> al conflicto; las plataformas de gas siguieron cayendo por precios bajos del gas natural.',
+        'Las exportaciones de energía desde el Golfo con <strong>máximos históricos</strong>, apoyadas por liberaciones del Strategic Petroleum Reserve y nueva capacidad de exportación de GNL.',
+        'Los costos de perforación subieron por el alza del diésel; los productores buscan sustitutos para otros insumos clave ante la presión de costos generalizada. Pocos planes de expansión material.',
+      ]
+    },
+    tech: {
+      status: 'pos',
+      tag: 'IA impulsa sector',
+      bullets: [
+        'La inversión en infraestructura de IA (data centers) fue el segmento más robusto de la economía, impulsando manufactura, construcción comercial, transporte de maquinaria pesada y demanda de energía.',
+        'La adopción de IA en operaciones corporativas aceleró: varias firmas reportaron reducción de necesidad de contratar por automatización de tareas repetitivas (especialmente entry-level tech y back-office).',
+        'Offshore de funciones profesionales (contabilidad, transcripción médica, gestión de bases de datos) creció impulsado por la combinación de costos laborales elevados y mayor productividad IA en proveedores offshore.',
+        'La arrendamiento de firmas de IA en Manhattan <strong>superó el total de 2025</strong>, con contratos de plazo más corto; los salarios de roles IA siguieron subiendo más rápido que el promedio.',
+      ]
+    },
+    geopolitics: {
+      status: 'neg',
+      tag: 'Conflicto Medio Oriente',
+      bullets: [
+        'El <strong>conflicto en Medio Oriente: factor dominante</strong>: <strong>cierre del Estrecho de Ormuz</strong> generó disrupciones en cadenas de suministro de petróleo, petroquímicos, fertilizantes y fletes marítimos.',
+        'Los combustible con <strong>alzas pronunciadas</strong> (un distribuidor del Distrito Richmond reportó +125% en un mes); el alza del diésel impactó a prácticamente todos los sectores de la economía real.',
+        'Exportadores agrícolas del Sureste retuvieron producto porque los recargos de combustible hacían inviable el envío; fabricantes de tractores perdieron pedidos de clientes en Medio Oriente.',
+        'La incertidumbre del conflicto <strong>frenó inversiones, contratos y contrataciones</strong> en múltiples sectores; varios distritos la citaron como razón del deterioro en perspectivas.',
+      ]
+    },
+    vulnerable: {
+      status: 'neg',
+      tag: 'Demanda social al alza',
+      bullets: [
+        'Hogares de bajos y medios ingresos bajo creciente presión: <strong>combustible, comida y servicios comprime presupuestos</strong>; la demanda de asistencia social aumentó en múltiples distritos.',
+        'Organizaciones sin fines de lucro reportaron "<strong>fatiga de donantes</strong>", recortes de programas y personal, y exploración de fusiones ante la caída en financiamiento federal, estatal y privado.',
+        'En Cleveland, aumento en deudas por impuestos prediales y seguros impide que arrendatarios de bajos ingresos accedan a la propiedad; se reportó un <strong>aumento en personas sin hogar entre adultos mayores</strong>.',
+        'En Dallas, escasez de pañales y artículos básicos llevó a discontinuar programas; el <strong>temor a controles migratorios desincentivó</strong> que comunidades vulnerables busquen asistencia en persona.',
+      ]
+    },
+  },
+};
+
+// ─── TAG NORMALIZATION ───────────────────────────────────────────
+// Regla: si el status de un tema NO cambia entre meses consecutivos,
+// el tag se hereda del mes anterior (para mantener consistencia visual).
+// Si el status SÍ cambia, el tag del nuevo mes se respeta tal cual.
+// El status NUNCA se modifica — solo el tag.
+function normalizeTags() {
+  TOPICS.forEach(topic => {
+    for (let i = 1; i < MONTHS.length; i++) {
+      const prevMonth = MONTHS[i - 1];
+      const currMonth = MONTHS[i];
+      const prev = DATA[prevMonth]?.[topic.id];
+      const curr = DATA[currMonth]?.[topic.id];
+      if (!prev || !curr) continue;
+      if (curr.status === prev.status) {
+        // mismo status → heredar tag
+        curr.tag = prev.tag;
+      }
+      // distinto status → respetar tag y status del mes actual, sin tocar nada
+    }
+  });
+}
+normalizeTags();
+
+// ─── RENDER ──────────────────────────────────────────────────────
+function render() {
+  const wrapper = document.getElementById('tableWrapper');
+
+  if (MONTHS.length === 0) {
+    wrapper.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📄</div>
+        <div class="empty-state-title">Sin datos aún</div>
+        <div class="empty-state-sub">Adjunta el primer PDF del Beige Book para comenzar el seguimiento</div>
+      </div>`;
+    return;
+  }
+
+  let html = '<table><thead><tr>';
+  html += '<th class="topic-header">Tema</th>';
+  MONTHS.forEach((m, i) => {
+    const isLatest = i === MONTHS.length - 1;
+    html += `<th class="month-header${isLatest ? ' latest' : ''}">${DATA[m].label}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  TOPICS.forEach(topic => {
+    html += '<tr>';
+    html += `<td class="topic-cell"><span class="topic-name">${topic.name}</span></td>`;
+    MONTHS.forEach(m => {
+      const cell = DATA[m][topic.id];
+      if (!cell) {
+        html += `<td class="data-cell"><span class="empty-cell"></span></td>`;
+      } else {
+        const s = STATUS[cell.status] || STATUS.flat;
+        html += `<td class="data-cell">
+          <span class="badge ${cell.status}" onclick="openModal('${m}','${topic.id}')">
+            <span class="badge-icon">${s.icon}</span>
+            <span class="badge-label">${escHtml(cell.tag)}</span>
+          </span>
+        </td>`;
+      }
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  wrapper.innerHTML = html;
+}
+
+// ─── MODAL ───────────────────────────────────────────────────────
+function openModal(monthKey, topicId) {
+  const month = DATA[monthKey];
+  const cell  = month[topicId];
+  const topic = TOPICS.find(t => t.id === topicId);
+  const s     = STATUS[cell.status] || STATUS.flat;
+
+  document.getElementById('modalPeriod').textContent = month.label;
+  document.getElementById('modalTopic').textContent  = topic.icon + ' ' + topic.name;
+
+  const badge = document.getElementById('modalBadge');
+  badge.textContent = escHtml(cell.tag);
+  badge.className   = 'modal-badge ' + cell.status;
+
+  const ul = document.getElementById('modalBullets');
+  ul.innerHTML = cell.bullets.map(b => `<li>${b}</li>`).join('');
+
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay')) {
+    document.getElementById('modalOverlay').classList.remove('active');
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('modalOverlay').classList.remove('active');
+});
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
