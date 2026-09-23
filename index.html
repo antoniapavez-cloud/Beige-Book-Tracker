@@ -103,6 +103,14 @@
     font-style: normal;
     color: #969696;
   }
+  .wh-source-link {
+    color: #969696;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .wh-source-link:hover {
+    color: var(--accent);
+  }
   .legend {
     display: flex;
     gap: 12px;
@@ -439,6 +447,132 @@
     text-underline-offset: 4px;
   }
 
+  /* UPDATE MANUAL BUTTON + MODAL */
+  .um-btn-wrap {
+    text-align: right;
+    padding: 0 32px 28px;
+  }
+  .um-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 300;
+    font-family: 'Aller', sans-serif;
+    border: 1px solid var(--border2);
+    border-radius: 5px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .um-btn:hover {
+    background: var(--surface2);
+    color: var(--text);
+  }
+  .um-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(5,7,12,0.85);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .um-overlay.open { display: flex; }
+  .um-box {
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    max-width: 680px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 28px 28px 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    position: relative;
+    animation: modal-in 0.18s ease;
+  }
+  .um-close {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    font-size: 18px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    line-height: 1;
+    transition: color 0.1s;
+  }
+  .um-close:hover { color: var(--text); }
+  .um-title {
+    font-family: 'Aller', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .um-sub {
+    font-family: 'Aller Light', sans-serif;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 300;
+    margin-bottom: 18px;
+  }
+  .um-step {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+  }
+  .um-step-num {
+    font-family: 'Aller', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+    min-width: 20px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .um-step-body {
+    font-family: 'Aller Light', sans-serif;
+    font-size: 12px;
+    font-weight: 300;
+    color: var(--text);
+    line-height: 1.55;
+  }
+  .um-step-body b {
+    font-family: 'Aller', sans-serif;
+    font-weight: 700;
+  }
+  .um-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 16px 0;
+  }
+  .um-note {
+    font-family: 'Aller Light', sans-serif;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 300;
+    line-height: 1.55;
+    font-style: italic;
+  }
+  .um-accent {
+    color: var(--accent);
+  }
+  .um-link {
+    color: var(--accent);
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .um-link:hover {
+    text-decoration: none;
+  }
+
   /* SCROLLBAR */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -453,11 +587,17 @@
     <span class="wh-tag">Información Pública</span>
     <span class="wh-sub">Periodicidad: Bimestral</span>
     <span class="wh-sub">Última actualización: <strong id="lastUpdated">loading...</strong></span>
-    <span class="wh-sub">Fuente: Federal Reserve Beige Book</span>
+    <span class="wh-sub">Fuente: <a href="https://www.federalreserve.gov/monetarypolicy/beige-book-default.htm" target="_blank" rel="noopener" class="wh-source-link">https://www.federalreserve.gov/monetarypolicy/beige-book-default.htm</a></span>
   </div>
 </div>
 
 <div class="table-wrapper" id="tableWrapper"></div>
+
+<div class="um-btn-wrap">
+  <button class="um-btn" onclick="document.getElementById('updateModal').classList.add('open')">
+    Manual de actualización
+  </button>
+</div>
 
 <!-- Full Text Modal -->
 <div class="modal-overlay" id="fullTextOverlay" onclick="closeFullText(event)">
@@ -1571,5 +1711,36 @@ render();
   document.getElementById('lastUpdated').textContent = latest?.publishedDate || '—';
 })();
 </script>
+<!-- Update Manual Modal -->
+<div class="um-overlay" id="updateModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="um-box">
+    <button class="um-close" onclick="document.getElementById('updateModal').classList.remove('open')">✕</button>
+    <div class="um-title">Manual de actualización</div>
+    <div class="um-sub">Cómo agregar un nuevo mes al Beige Book Tracker</div>
+    <div class="um-step">
+      <div class="um-step-num">1.</div>
+      <div class="um-step-body">Entrar a <a href="https://www.federalreserve.gov/monetarypolicy/beige-book-default.htm" target="_blank" rel="noopener" class="um-link">https://www.federalreserve.gov/monetarypolicy/beige-book-default.htm</a> y descargar el PDF del Beige Book más reciente.</div>
+    </div>
+    <div class="um-step">
+      <div class="um-step-num">2.</div>
+      <div class="um-step-body">Guardar el PDF <b>completo</b> (todas sus páginas, sin editar) en: <b>W:\4. Informes\-- Informes Mensuales\Beige Book</b></div>
+    </div>
+    <div class="um-step">
+      <div class="um-step-num">3.</div>
+      <div class="um-step-body">Si el PDF tiene <b>más de 100 páginas</b>, pasarlo por <a href="https://www.ilovepdf.com/es" target="_blank" rel="noopener" class="um-link">iLovePDF</a> y sacarle las últimas hojas (apéndices). Esta versión recortada es solo para el paso siguiente — en la carpeta de la ruta anterior siempre queda guardado el Beige Book entero.</div>
+    </div>
+    <div class="um-step">
+      <div class="um-step-num">4.</div>
+      <div class="um-step-body">Adjuntar en el proyecto el <b>PDF sin esas últimas hojas</b> (o el completo si no superó las 100 páginas) junto con el <b>HTML actual</b> del tracker, y pedir la actualización del mes.</div>
+    </div>
+    <div class="um-step">
+      <div class="um-step-num">5.</div>
+      <div class="um-step-body">Con el HTML nuevo ya listo, guardarlo en Drive: <b>G:\Unidades compartidas\MFO-Dashboards\Monitores\Estrategia</b></div>
+    </div>
+    <hr class="um-divider">
+    <div class="um-note">Este proceso se repite con cada Beige Book que publica la Fed (8 veces al año). El Beige Book completo siempre queda archivado en la carpeta W: aunque se adjunte una versión recortada al proyecto.</div>
+  </div>
+</div>
+
 </body>
 </html>
