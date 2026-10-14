@@ -661,6 +661,7 @@ const STATUS = {
 // ─── DATA ────────────────────────────────────────────────────────
 // MONTHS: array of month keys in chronological order (newest first = displayed first)
 const MONTHS = [
+  'oct2026',
   'aug2026',
   'jun2026',
   'may2026',
@@ -670,6 +671,158 @@ const MONTHS = [
 ];
 
 const DATA = {
+  'oct2026': {
+    label: 'Oct 2026',
+    publishedDate: '14 Oct 2026',
+    fullText: `<h4>Overall Economic Activity</h4>
+<p>Since the prior Beige Book, <strong>two of the twelve Federal Reserve Districts reported moderate growth in economic activity</strong>. Three Districts reported modest growth, while four reported slight growth, and three reported no significant change. <strong>Robust, broad-based growth in manufacturing led the moderate growth reported in the Dallas District</strong>. While not as robust, another six Districts reported modest to moderate growth from their manufacturing firms. The remaining five Districts noted little or no manufacturing growth. Reports on other sectors indicate little growth overall. <strong>Most Districts reported little or no change in overall consumer spending</strong>. Auto contacts noted flat to modestly lower sales in five of the six Districts that reported. Over half of the Districts noted that <strong>consumer spending was driven by high-income households</strong>. Even in Dallas, where District firms reported solid retail sales, there were “some reports of lower-income customers being more cautious with spending.” Tourism continued to grow, but firms in the Boston, Minneapolis, and San Francisco Districts noted a decline in sales from Canadian tourists. Overall, most Districts reported that firms have maintained a positive economic outlook for the coming months. However, expectations tend to be for <strong>slight growth, weighted toward manufacturing and burdened by persistent uncertainties</strong>.</p>
+
+<h4>Labor Markets</h4>
+<p><strong>Most Districts described little or no net change in overall employment levels</strong>. While three Districts described modest increases, five reported slight increases, and four reported no significant change. Overall, labor market conditions were little changed. Labor supply was generally adequate to meet demand; however, <strong>shortages persisted for specialized, technical, and skilled trade workers</strong>. Five Districts reported that some firms had either reduced staffing levels (through attrition), delayed hiring, or anticipated less job creation after <strong>increasing productivity by investing in AI</strong>. Five Districts described moderate growth in overall wages, four reported modest growth, and two reported slight growth. Several Districts noted that inflation has spawned additional wage pressure in the form of <strong>higher cost-of-living demands from individuals as well as challenges from rising benefit costs</strong>. Staffing contacts in the Boston District noted that workers were motivated to seek new jobs as wage increases lagged inflation.</p>
+
+<h4>Prices</h4>
+<p><strong>Three Districts characterized overall price growth as robust</strong>, while eight noted that growth was moderate—and three of the eight noted that input price pressures were intensifying, if not already growing robustly. One District reported modest price growth. Moreover, <strong>four Districts reported that the pace of price increases picked up since the prior period</strong>. <strong>Higher oil prices permeated all District reports</strong>. Firms reported elevated diesel prices and noted that fuel surcharges were passing on increased costs throughout the supply chain. Contacts in multiple Districts also noted continued price pressure from other commodities, tariffs, and insurance. Consumer-facing firms noted <strong>tighter profit margins as price-sensitive customers continue to resist price hikes</strong>. Contacts are managing their margins with selective price hikes, targeted incentives, and menu changes that reduce their costs. Firms in several Districts cited persistent uncertainty around energy and tariffs and <strong>expect that prices will increase further in the coming months</strong>, as existing contracts expire, and firms must renegotiate hedge contracts for their own inputs and/or delivery contracts to their customers.</p>`,
+    economy: {
+      status: 'flat',
+      tag: 'Slight Expansion',
+      bullets: [
+        'Activity grew in <strong>9 of 12 Districts</strong> (2 moderate, 3 modest, 4 slight) while 3 reported no significant change, a slightly narrower breadth than the prior report.',
+        'Manufacturing led growth, with <strong>Dallas reporting robust, broad-based gains</strong> and six other Districts modest to moderate increases; other sectors showed little growth overall.',
+        'Consumer spending was little changed in most Districts and <strong>driven by high-income households</strong> in over half of them, while auto sales were flat to modestly lower.',
+        'Firms kept a positive outlook, but expectations pointed to <strong>slight growth weighted toward manufacturing</strong> and burdened by persistent uncertainty.',
+      ]
+    },
+    consumer: {
+      status: 'neg',
+      tag: 'Spending Softens',
+      bullets: [
+        'Most Districts reported <strong>little or no change in consumer spending</strong>; Minneapolis and Kansas City saw declines, and Cleveland was flat after four consecutive periods of decline.',
+        'Over half of the Districts said spending was <strong>driven by high-income households</strong>; San Francisco described a K-shaped consumer, with strain spreading to middle-income households.',
+        'Higher fuel prices weighed broadly on budgets, and <strong>auto sales were flat to modestly lower in 5 of 6 reporting Districts</strong> on affordability, gas prices, and financing costs.',
+        'Tourism kept growing, but Boston, Minneapolis, and San Francisco noted <strong>fewer Canadian visitors</strong>, while restaurants reported lower traffic and more promotions.',
+      ]
+    },
+    prices: {
+      status: 'hot',
+      tag: 'Energy Pressure',
+      bullets: [
+        'Price growth was <strong>robust in 3 Districts, moderate in 8, and modest in 1</strong>, and the pace picked up in 4 Districts versus the prior period.',
+        '<strong>Higher oil and diesel prices permeated all District reports</strong>, with fuel surcharges passing increased costs throughout the supply chain.',
+        'Tariffs, insurance, and health-care premiums added to costs, while <strong>consumer-facing firms saw tighter margins</strong> as price-sensitive customers resisted hikes.',
+        'Firms expect further increases as <strong>contracts and hedges expire</strong>; Philadelphia\'s future prices indexes reached some of their highest readings in 35 years.',
+      ]
+    },
+    labor: {
+      status: 'pos',
+      tag: 'Jobs Picking Up',
+      bullets: [
+        'Employment was little changed overall: <strong>3 Districts reported modest gains, 5 slight gains</strong>, and 4 no significant change.',
+        'Labor supply was generally adequate, but <strong>shortages persisted for specialized, technical, and skilled trade workers</strong>.',
+        'Five Districts reported firms <strong>reducing staff through attrition or delaying hiring after AI-driven productivity gains</strong>.',
+        'Wages grew moderately in 5 Districts, modestly in 4, and slightly in 2, with <strong>cost-of-living demands and rising benefit costs</strong> adding pressure; Boston noted raises lagging inflation.',
+      ]
+    },
+    manufacturing: {
+      status: 'pos',
+      tag: 'Slight Growth',
+      bullets: [
+        '<strong>Dallas led with robust, broad-based growth</strong>, while six other Districts reported modest to moderate gains and five saw little or no growth.',
+        'Demand stayed concentrated in <strong>data centers, power generation, defense, and aerospace</strong>, as reported by Cleveland, Philadelphia, St. Louis, and Kansas City.',
+        'Philadelphia saw signs of broadening, with <strong>over two-thirds of firms raising Q3 production</strong>, the highest share since 2022, though skilled labor constrained capacity.',
+        'Tariffs, higher fuel costs, and <strong>trade conflicts with Canada</strong> weighed on inputs and exports in New York, Minneapolis, and San Francisco.',
+      ]
+    },
+    residential: {
+      status: 'neg',
+      tag: 'Rising Rates Weigh',
+      bullets: [
+        '<strong>Rising mortgage rates</strong> slowed housing activity across most Districts, with lock-in effects keeping inventory tight in New York.',
+        'Boston home sales <strong>declined moderately</strong>, while Philadelphia, Chicago, St. Louis, and Minneapolis reported declines and San Francisco softened modestly.',
+        'Builders reported weak demand: Philadelphia noted a developer <strong>walking away from early-stage projects</strong>, and Dallas described pressured margins and dim outlooks.',
+        'Pockets of strength remained, with <strong>Atlanta home sales improving moderately</strong> and Cleveland existing sales rising, supported by incentives and pent-up demand.',
+      ]
+    },
+    commercial: {
+      status: 'flat',
+      tag: 'Mixed by Sector',
+      bullets: [
+        'Manhattan office leasing stayed brisk with <strong>bidding wars for top-tier space</strong>, while New York industrial demand was driven largely by data centers.',
+        'Data center projects kept nonresidential activity elevated in Cleveland, Chicago, and Atlanta, though <strong>Texas paused data center permits</strong> pending grid and water audits.',
+        'Rising long-term rates <strong>slowed commercial property sales</strong> in New York, and Kansas City lenders reported CRE loan spreads rising substantially.',
+        'San Francisco and Boston described CRE as <strong>steady to stable</strong>, while Richmond reported a slow fall pace and lengthening deal timelines.',
+      ]
+    },
+    banking: {
+      status: 'neg',
+      tag: 'Tightening Conditions',
+      bullets: [
+        'Chicago reported <strong>financial conditions tightening modestly</strong>, with bond values falling and business and consumer loan rates rising.',
+        'Dallas bankers <strong>turned pessimistic</strong>, citing the Mideast conflict, elevated inflation, and the increase in the federal funds rate, as credit standards tightened.',
+        'New York noted <strong>interest rate exposure becoming the dominant question</strong> for banks and investors, with deposits declining and delinquencies edging higher.',
+        'Cleveland loan demand <strong>grew robustly</strong>, but San Francisco lending weakened slightly as higher borrowing costs damped mortgage and auto loan demand.',
+      ]
+    },
+    transport: {
+      status: 'hot',
+      tag: 'Freight Costs Surge',
+      bullets: [
+        'Richmond reported ocean <strong>spot rates to the East Coast up 200% since February</strong>, driven by capacity constraints, energy costs, and strong U.S. cargo demand.',
+        'Elevated diesel prices pushed <strong>fuel surcharges across the supply chain</strong>, and Cleveland freight carriers raised rates after an extended period of depressed pricing.',
+        'Atlanta noted <strong>robust rail intermodal volumes</strong> and rising freight forwarding, though trucking demand stayed soft outside data center and advanced manufacturing.',
+        'Richmond truckers <strong>dipped into savings or cut fleet maintenance</strong> to cover fuel costs, while Kansas City reported delays in receiving inventory.',
+      ]
+    },
+    agriculture: {
+      status: 'neg',
+      tag: 'Weak Conditions',
+      bullets: [
+        'Chicago <strong>farm income expectations for 2026 edged down</strong>, as heavy rains slowed the harvest and higher fuel costs raised drying expenses.',
+        'Kansas City and San Francisco described conditions as <strong>subdued or weakening</strong>, with diesel prices and drought raising costs despite firmer crop prices.',
+        'Minneapolis expected a <strong>significant decrease in corn production</strong> in some areas after summer heat and drought, and Kansas City ag credit deteriorated gradually.',
+        'Dallas was more optimistic on rainfall and solid grain prices, but <strong>diesel prices have nearly doubled</strong> and fertilizer is up 10 to 25 percent year over year.',
+      ]
+    },
+    energy: {
+      status: 'flat',
+      tag: 'Supply Strained',
+      bullets: [
+        'Oil and gas activity <strong>grew moderately</strong> in Atlanta, Kansas City, and Dallas, with oil prices well above breakeven levels.',
+        'Atlanta refiners reported <strong>record margins</strong> on limited international capacity, with maintenance that cannot be deferred past early 2027 likely to constrain supply.',
+        'Kansas City contacts in rural Colorado reported <strong>intermittent diesel shortages</strong> at gas stations amid the Middle East energy supply shock.',
+        'Dallas Energy Survey respondents expect <strong>Persian Gulf crude exports to normalize only by Q2 2027 or later</strong>, keeping the price outlook highly uncertain.',
+      ]
+    },
+    tech: {
+      status: 'pos',
+      tag: 'AI Drives Sector',
+      bullets: [
+        'Data centers, power generation, and AI remained <strong>key drivers of manufacturing and construction</strong> in Cleveland, Philadelphia, St. Louis, and Kansas City.',
+        'Five Districts noted firms <strong>reducing staffing or delaying hiring after AI productivity gains</strong>; Dallas cited large accounting firms delaying entry-level contracts.',
+        'Data center demand <strong>crowded out other production and labor</strong> in Kansas City and Chicago, and drove up skilled trades pay in Dallas and San Francisco.',
+        'Regulatory pushback grew: <strong>Texas froze data center permits</strong> pending grid and water audits, and Cleveland and Richmond cited local moratoriums.',
+      ]
+    },
+    geopolitics: {
+      status: 'neg',
+      tag: 'Conflict Escalates',
+      bullets: [
+        'The <strong>ongoing Middle East conflict</strong> was cited across Districts as a driver of oil, diesel, and sulfur price spikes and of business uncertainty.',
+        'Kansas City described an <strong>ongoing Middle Eastern energy supply shock</strong>, though some contacts anticipate further reopening of the Strait of Hormuz.',
+        'Atlanta noted falling global inventories tied to <strong>the Middle East crisis and the conflict in Europe</strong>, raising concerns about future supply availability.',
+        '<strong>Trade conflicts with Canada</strong> hit manufacturers in New York and Minneapolis, while Canadian tourism declined in Boston, Minneapolis, and San Francisco.',
+      ]
+    },
+    vulnerable: {
+      status: 'neg',
+      tag: 'Social Demand Rising',
+      bullets: [
+        'Cleveland\'s nonprofit survey showed <strong>87% of respondents reporting declining client finances</strong>, the highest share in the survey\'s history.',
+        'Stricter <strong>SNAP and Medicaid eligibility and work requirements</strong> drove surging food assistance demand in New York and Dallas, with many first-time pantry users.',
+        'Households turned to <strong>401(k) hardship withdrawals, buy now, pay later, and credit cards</strong> to make ends meet, according to New York, St. Louis, and Dallas.',
+        'Kansas City small businesses increasingly relied on <strong>costly merchant cash advances</strong> amid worsening credit quality and tighter SBA lending standards.',
+      ]
+    },
+  },
   'aug2026': {
     label: 'Aug 2026',
     publishedDate: '03 Sep 2026',
